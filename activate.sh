@@ -13,6 +13,28 @@ autoenv_init()
   target=$1
   home="$(dirname $HOME)"
 
+  # check venv first
+  _files=( $(
+    while [[ "$PWD" != "/" && "$PWD" != "$home" ]]
+    do
+      _file="$PWD/.venv"
+      if [[ -e "${_file}" ]]
+      then echo "${_file}"
+      fi
+      builtin cd .. &>/dev/null
+    done
+  ) )
+ 
+  # if found then activate that virtualenv
+  _file=${#_files[@]}
+  while (( _file > 0 ))
+  do
+    envfile=${_files[_file-__array_offset]}
+    venv=$(cat ${envfile})
+    workon "$venv"
+    : $(( _file -= 1 ))
+  done
+
   _files=( $(
     while [[ "$PWD" != "/" && "$PWD" != "$home" ]]
     do
